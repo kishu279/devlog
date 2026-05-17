@@ -38,7 +38,15 @@ pub fn handle_setup(project: Option<String>) {
 
 // FIND THE EACH PROJECT RECURSIVELY AND FIND THE .GIT
 fn handle_check_dir(path: PathBuf) {
-    let mut walker = WalkDir::new(path).follow_links(true).into_iter();
+    let mut walker = WalkDir::new(path)
+        .follow_links(true)
+        .max_depth(6)
+        .into_iter()
+        .filter_entry(|e| {
+            let name = e.file_name().to_string_lossy();
+
+            !matches!(name.as_ref(), "node_modules" | "target" | ".cache")
+        });
 
     while let Some(entry) = walker.next() {
         let entry = match entry {
@@ -51,7 +59,7 @@ fn handle_check_dir(path: PathBuf) {
         if path.is_dir() && path.ends_with(".git") {
             println!("Found the git: {:?}", path);
             walker.skip_current_dir(); // Tells WalkDir not to look inside this .git folder
-            break;
+            continue; // skip finding the project inside that project we are inside 
         }
     }
 }
