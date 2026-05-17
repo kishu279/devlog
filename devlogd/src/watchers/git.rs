@@ -7,9 +7,12 @@ use crate::{
         payload::{commit::CommitPayload, EventPayload},
     },
     helper::convert_datetime_to_i64,
+    store::events::insert_event,
 };
 
-pub async fn poll_git(project: &str) -> Result<(), Box<dyn std::error::Error>> {
+use sqlx::SqlitePool;
+
+pub async fn poll_git(project: &str, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     // get the specific items from the logs
     // hash
     // commit message
@@ -127,6 +130,9 @@ pub async fn poll_git(project: &str) -> Result<(), Box<dyn std::error::Error>> {
     let json = serde_json::to_string_pretty(&log_data).unwrap();
 
     println!("{}", json);
+
+    // making the call to the database
+    insert_event(&log_data, pool).await?;
 
     Ok(())
 }
