@@ -1,6 +1,6 @@
 use inquire::Text;
 use std::io::Write;
-use std::path;
+
 use std::{
     fs::{self, Permissions},
     os::unix::fs::PermissionsExt,
@@ -37,7 +37,7 @@ pub fn handle_setup(project: Option<String>) -> Result<(), Box<dyn std::error::E
         println!("\n❌ Error: The path provided is not a valid folder!");
     }
 
-    let path_buf: Vec<PathBuf> = handle_check_dir(&folder_path);
+    let path_buf: Vec<PathBuf> = handle_check_dir(&folder_path)?;
 
     // do some operation like going to each of them and installing the hook
     // ...
@@ -59,7 +59,7 @@ pub fn handle_setup(project: Option<String>) -> Result<(), Box<dyn std::error::E
 }
 
 // FIND THE EACH PROJECT RECURSIVELY AND FIND THE .GIT
-fn handle_check_dir(path: &PathBuf) -> Vec<PathBuf> {
+fn handle_check_dir(path: &PathBuf) -> Result<Vec<PathBuf>, anyhow::Error> {
     let mut path_buf: Vec<PathBuf> = Vec::new();
 
     let mut walker = WalkDir::new(path)
@@ -74,7 +74,7 @@ fn handle_check_dir(path: &PathBuf) -> Vec<PathBuf> {
 
     while let Some(entry) = walker.next() {
         let entry = match entry {
-            Ok(e) => e,
+            Result::Ok(e) => e,
             Err(_) => continue,
         };
 
@@ -82,18 +82,22 @@ fn handle_check_dir(path: &PathBuf) -> Vec<PathBuf> {
 
         if path.is_dir() && path.ends_with(".git") {
             println!("Found the git: {:?}", path);
-            path_buf.push(path.to_path_buf());
+            let absolute = std::fs::canonicalize(path)?;
+            println!("{:?}", absolute);
+            path_buf.push(absolute);
             walker.skip_current_dir(); // Tells WalkDir not to look inside this .git folder
             continue; // skip finding the project inside that project we are inside
         }
     }
 
-    path_buf
+    Ok(path_buf)
 }
 
-fn install_hook(repo: &Path) -> std::io::Result<()> {
+// installing hook on the .git/hook
+fn install_hook(repo: &Path) -> Result<(), anyhow::Error> {
     let hook_path = repo.join(".git/hooks/post-commit");
-    let hook_line = r#"printf 'commit' | nc -U ~/.devlog/devlogd.sock 2>/dev/null || true"#;
+    let hook_line =
+        r#"printf 'commit|%s' "$(pwd)" | nc -U ~/.devlog/devlogd.sock 2>/dev/null || true"#;
     if hook_path.exists() {
         // Check if already installed (idempotent)
         let content = fs::read_to_string(&hook_path)?;

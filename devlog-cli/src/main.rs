@@ -24,14 +24,16 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("devlog CLI");
 
     let cli = Cli::parse();
 
     match &cli.command {
         Commands::Setup { project } => {
-            handle_setup(project.clone());
+            handle_setup(project.clone())?;
         }
     }
+
+    Ok(())
 }
