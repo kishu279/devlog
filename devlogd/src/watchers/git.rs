@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use tokio::process::Command;
 
 use crate::{
     event::{
@@ -8,9 +8,6 @@ use crate::{
     },
     helper::convert_datetime_to_i64,
 };
-use chrono::Utc;
-
-use tokio::process::Command;
 
 pub async fn poll_git(project: &str) -> Result<(), Box<dyn std::error::Error>> {
     // get the specific items from the logs
@@ -27,14 +24,27 @@ pub async fn poll_git(project: &str) -> Result<(), Box<dyn std::error::Error>> {
         ])
         .current_dir(project)
         .output()
-        .await
-        .expect("failed to execute process")
-        .stdout;
+        .await?;
 
-    let line = String::from_utf8_lossy(&output);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("git log failed in {project}: {}", stderr.trim()),
+        )
+        .into());
+    }
+
+    let line = String::from_utf8_lossy(&output.stdout);
+
+    if line.trim().is_empty() {
+        println!("No commits found since midnight in {project}");
+        return Ok(());
+    }
+
     println!("{}", line);
 
-    let parts: Vec<&str> = line.split('|').collect();
+    let parts: Vec<&str> = line.split("|").collect();
 
     // DATA
     let hash = parts[0];
