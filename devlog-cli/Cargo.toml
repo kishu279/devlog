@@ -14,7 +14,9 @@ sqlx = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
+walkdir = { workspace = true }
 
 # CLI-specific dependencies
 clap = { version = "4.5", features = ["derive"] }
 reqwest = { version = "0.12", features = ["json"] }
+inquire = "0.9.4"
