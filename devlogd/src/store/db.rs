@@ -34,34 +34,3 @@ pub async fn connect_db() -> anyhow::Result<SqlitePool> {
 
     Ok(pool)
 }
-
-// use sqlx::migrate::Migrator;
-// pub async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
-//     // This reads ALL .sql files from src/migrations/ folder
-//     // and runs them in order
-//     Migrator::new(std::path::Path::new("src/migrations"))
-//         .await?
-//         .run(pool)
-//         .await?;
-//     Ok(())
-// }
-
-// CREATE INDEX idx_events_project_ts
-// ON events(project, ts DESC);
-
-// CREATE INDEX idx_events_kind_ts
-// ON events(kind, ts DESC);
-
-// CREATE INDEX idx_events_project_kind_ts
-// ON events(project, kind, ts DESC);
-
-// CREATE TABLE events (
-//     id INTEGER PRIMARY KEY,
-
-//     kind TEXT NOT NULL,
-//     ts INTEGER NOT NULL,
-
-//     project TEXT NOT NULL,
-
-//     payload TEXT NOT NULL
-// );

@@ -12,3 +12,10 @@ pub struct EventRow {
 
     pub payload: String,
 }
+
+#[derive(Debug, FromRow)]
+pub struct Project {
+    pub name: String,
+    pub path: String,
+    pub path_hash: String,
+}
