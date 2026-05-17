@@ -102,7 +102,7 @@ pub async fn poll_git(project: &str, pool: &SqlitePool) -> Result<(), Box<dyn st
             .expect("failed to execute process")
             .stdout;
 
-        let branch = String::from_utf8_lossy(&output);
+        let branch = String::from_utf8_lossy(&output).trim().to_string();
 
         let output = Command::new("git")
             .args(["rev-parse", "--show-toplevel"])
@@ -112,7 +112,7 @@ pub async fn poll_git(project: &str, pool: &SqlitePool) -> Result<(), Box<dyn st
             .expect("failed to execute process")
             .stdout;
 
-        let project = String::from_utf8_lossy(&output).to_string();
+        let project = String::from_utf8_lossy(&output).trim().to_string();
 
         let log_data = DevlogEvent {
             kind: EventKind::Commit,

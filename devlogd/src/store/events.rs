@@ -20,34 +20,34 @@ pub async fn insert_event(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let payload_json = serde_json::to_string(&event.payload)?;
 
-    
+
 
     // println!("{}", );
 
     let event_key = event.event_key();
     println!("{}", event_key);
 
-    // let output = sqlx::query(
-    //     r#"
-    //     INSERT OR IGNORE INTO events(
-    //         event_key,
-    //         kind,
-    //         ts,
-    //         project,
-    //         payload
-    //     )
-    //     VALUES (?, ?, ?, ?, ?)
-    // "#,
-    // )
-    // .bind(event_key)
-    // .bind(&event.kind)
-    // .bind(&event.ts)
-    // .bind(&event.project)
-    // .bind(payload_json)
-    // .execute(pool)
-    // .await?;
+    let output = sqlx::query(
+        r#"
+        INSERT OR IGNORE INTO events(
+            event_key,
+            kind,
+            ts,
+            project,
+            payload
+        )
+        VALUES (?, ?, ?, ?, ?)
+    "#,
+    )
+    .bind(event_key)
+    .bind(&event.kind)
+    .bind(&event.ts)
+    .bind(&event.project)
+    .bind(payload_json)
+    .execute(pool)
+    .await?;
 
-    // println!("{}", output.rows_affected());
+    println!("{}", output.rows_affected());
 
     Ok(())
 }

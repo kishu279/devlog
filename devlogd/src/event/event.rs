@@ -24,7 +24,8 @@ impl DevlogEvent {
 
                 let ts = event.ts;
 
-                format!("commit:{}:{}", hash, ts)
+                // format!("commit:{}:{}", hash, ts)
+                format!("commit:{}", hash)
             }
             EventKind::FileChange | EventKind::ShellCommand | EventKind::EditorActivity => {
                 todo!("Will implement this by today")

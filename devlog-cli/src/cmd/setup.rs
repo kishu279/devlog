@@ -1,13 +1,14 @@
 use inquire::Text;
-use std::path::PathBuf;
+use std::io::Write;
+use std::path;
+use std::{
+    fs::{self, Permissions},
+    os::unix::fs::PermissionsExt,
+    path::{Path, PathBuf},
+};
 use walkdir::WalkDir;
 
-pub fn handle_setup(project: Option<String>) {
-    // let log_title = Text::new("What is the title of this project log?")
-    //     .with_placeholder("e.g., Project Alpha")
-    //     .prompt()
-    //     .unwrap_or_else(|_| "Untitled".to_string());
-
+pub fn handle_setup(project: Option<String>) -> Result<(), Box<dyn std::error::Error>> {
     let folder_path_input = match project {
         Some(path_str) if !path_str.is_empty() => path_str.clone(),
         _ => {
@@ -27,17 +28,40 @@ pub fn handle_setup(project: Option<String>) {
     // 4. Validate the directory
     if folder_path.is_dir() {
         println!("\n✅ Success!");
-        // println!("Project Log:   {}", log_title);
-        println!("Linked Folder: {}", folder_path.display());
+        let absolute_path = fs::canonicalize(&folder_path)?;
+        println!(
+            "Linked Project Main Directory: {:?}",
+            absolute_path.to_string_lossy()
+        );
     } else {
         println!("\n❌ Error: The path provided is not a valid folder!");
     }
 
-    handle_check_dir(folder_path);
+    let path_buf: Vec<PathBuf> = handle_check_dir(&folder_path);
+
+    // do some operation like going to each of them and installing the hook
+    // ...
+
+    for item in path_buf {
+        println!("item found git on this folder {:?}", item);
+
+        let project_root = item.parent().unwrap();
+
+        // install the hook function
+        if let Err(e) = install_hook(&project_root) {
+            eprintln!("Failed to install hook for {:?}: {}", item, e);
+        } else {
+            println!("Hook installed successfully for {:?}", item);
+        }
+    }
+
+    Ok(())
 }
 
 // FIND THE EACH PROJECT RECURSIVELY AND FIND THE .GIT
-fn handle_check_dir(path: PathBuf) {
+fn handle_check_dir(path: &PathBuf) -> Vec<PathBuf> {
+    let mut path_buf: Vec<PathBuf> = Vec::new();
+
     let mut walker = WalkDir::new(path)
         .follow_links(true)
         .max_depth(6)
@@ -58,8 +82,31 @@ fn handle_check_dir(path: PathBuf) {
 
         if path.is_dir() && path.ends_with(".git") {
             println!("Found the git: {:?}", path);
+            path_buf.push(path.to_path_buf());
             walker.skip_current_dir(); // Tells WalkDir not to look inside this .git folder
-            continue; // skip finding the project inside that project we are inside 
+            continue; // skip finding the project inside that project we are inside
         }
     }
+
+    path_buf
+}
+
+fn install_hook(repo: &Path) -> std::io::Result<()> {
+    let hook_path = repo.join(".git/hooks/post-commit");
+    let hook_line = r#"printf 'commit' | nc -U ~/.devlog/devlogd.sock 2>/dev/null || true"#;
+    if hook_path.exists() {
+        // Check if already installed (idempotent)
+        let content = fs::read_to_string(&hook_path)?;
+        if content.contains("devlogd.sock") {
+            return Ok(()); // Already there, skip
+        }
+        // Append to existing hook
+        let mut file = fs::OpenOptions::new().append(true).open(&hook_path)?;
+        writeln!(file, "\n# devlog\n{}", hook_line)?;
+    } else {
+        // Create new hook
+        fs::write(&hook_path, format!("#!/bin/sh\n{}\n", hook_line))?;
+        fs::set_permissions(&hook_path, Permissions::from_mode(0o755))?;
+    }
+    Ok(())
 }
