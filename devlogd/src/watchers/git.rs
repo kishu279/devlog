@@ -128,10 +128,6 @@ pub async fn poll_git(project: &str, pool: &SqlitePool) -> Result<(), Box<dyn st
             }),
         };
 
-        let json = serde_json::to_string_pretty(&log_data).unwrap();
-
-        println!("{}", json);
-
         // making the call to the database
         insert_event(&log_data, pool).await?;
     }

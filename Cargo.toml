@@ -2,9 +2,10 @@
 
 [workspace]
 members = [
+    "devlog-core",
     "devlogd",
-    "devlog-cli"
-, "demo/project1", "demo/project2", "demo/project3", "demo/project4"]
+    "devlog-cli", "demo/project2",
+]
 resolver = "2"
 
 [workspace.dependencies]
@@ -18,3 +19,7 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 chrono = "0.4"
 walkdir = "2"
+
+[llm]
+api_key = "sk-or-v1-xxxxxxxxxxxxx"  # Your OpenRouter key
+model = "anthropic/claude-3.5-sonnet"

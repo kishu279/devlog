@@ -1,4 +1,4 @@
-use crate::{ipc::start_socket_server, store::db::connect_db, watchers::git::poll_git};
+use crate::{ipc::start_socket_server, store::db::connect_db};
 
 mod event;
 mod helper;

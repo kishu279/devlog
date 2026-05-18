@@ -3,14 +3,9 @@ use sqlx::{
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
     SqlitePool,
 };
-use std::path::PathBuf;
 
 pub async fn connect_db() -> anyhow::Result<SqlitePool> {
-    let db_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .context("failed to resolve workspace root")?
-        .join("demo")
-        .join("my_connection.db");
+    let db_path = devlog_core::db_path();
 
     if let Some(parent) = db_path.parent() {
         std::fs::create_dir_all(parent)

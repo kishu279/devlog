@@ -4,7 +4,7 @@ mod llm;
 
 use clap::{Parser, Subcommand};
 
-use crate::cmd::setup::handle_setup;
+use crate::cmd::{setup::handle_setup, standup::run_standup};
 
 #[derive(Parser)]
 #[command(name = "devlog")]
@@ -22,16 +22,21 @@ enum Commands {
         #[arg(short, long)]
         project: Option<String>,
     },
+    Standup,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("devlog CLI");
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
 
     let cli = Cli::parse();
 
     match &cli.command {
         Commands::Setup { project } => {
             handle_setup(project.clone())?;
+        }
+        Commands::Standup => {
+            run_standup().await?;
         }
     }
 

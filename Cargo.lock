@@ -382,6 +382,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "devlog-core",
+ "dotenvy",
  "inquire",
  "reqwest",
  "serde",
@@ -392,11 +394,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "devlog-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+]
+
+[[package]]
 name = "devlogd"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "devlog-core",
  "hex",
  "notify",
  "serde",
@@ -1512,19 +1526,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "project1"
-version = "0.1.0"
-
-[[package]]
 name = "project2"
-version = "0.1.0"
-
-[[package]]
-name = "project3"
-version = "0.1.0"
-
-[[package]]
-name = "project4"
 version = "0.1.0"
 
 [[package]]

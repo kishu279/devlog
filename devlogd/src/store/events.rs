@@ -20,12 +20,7 @@ pub async fn insert_event(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let payload_json = serde_json::to_string(&event.payload)?;
 
-
-
-    // println!("{}", );
-
     let event_key = event.event_key();
-    println!("{}", event_key);
 
     let output = sqlx::query(
         r#"

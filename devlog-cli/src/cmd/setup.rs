@@ -15,26 +15,28 @@ pub fn handle_setup(project: Option<String>) -> Result<(), Box<dyn std::error::E
             // Falls back here if flag is missing altogether OR passed as empty string ""
             Text::new("Drag and drop your project folder here (or paste the path):")
                 .with_help_message(
-                    "You can physically drag a folder from your desktop into this window.",
+                    "Press Enter to use the current directory, or paste a relative/absolute path.",
                 )
+                .with_default(".")
                 .prompt()
                 .unwrap()
         }
     };
 
-    // 3. Clean up shell quotes and whitespace from drag-and-drop actions
-    let folder_path = PathBuf::from(folder_path_input.trim().trim_matches(['"', '\'']));
+    let folder_path = resolve_input_path(&folder_path_input)?;
 
-    // 4. Validate the directory
     if folder_path.is_dir() {
-        println!("\n✅ Success!");
-        let absolute_path = fs::canonicalize(&folder_path)?;
+        println!("\nSuccess!");
         println!(
-            "Linked Project Main Directory: {:?}",
-            absolute_path.to_string_lossy()
+            "Linked Project Main Directory: {}",
+            folder_path.to_string_lossy()
         );
     } else {
-        println!("\n❌ Error: The path provided is not a valid folder!");
+        return Err(format!(
+            "path is not a valid folder: {}",
+            folder_path.to_string_lossy()
+        )
+        .into());
     }
 
     let path_buf: Vec<PathBuf> = handle_check_dir(&folder_path)?;
@@ -56,6 +58,23 @@ pub fn handle_setup(project: Option<String>) -> Result<(), Box<dyn std::error::E
     }
 
     Ok(())
+}
+
+fn resolve_input_path(input: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let cleaned = input.trim().trim_matches(['"', '\'']);
+    let path = if cleaned.is_empty() {
+        PathBuf::from(".")
+    } else {
+        PathBuf::from(cleaned)
+    };
+
+    let path = if path.is_absolute() {
+        path
+    } else {
+        std::env::current_dir()?.join(path)
+    };
+
+    Ok(path)
 }
 
 // FIND THE EACH PROJECT RECURSIVELY AND FIND THE .GIT
