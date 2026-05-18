@@ -10,8 +10,10 @@ use sqlx::{
 pub use sqlx::SqlitePool;
 
 pub fn db_path() -> PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    PathBuf::from(home).join(".devlog").join("events.db")
+    dirs::home_dir()
+        .expect("cannot find home dir")
+        .join(".devlog")
+        .join("events.db")
 }
 
 pub async fn get_pool() -> sqlx::Result<SqlitePool> {

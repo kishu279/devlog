@@ -7,7 +7,10 @@ use tokio::net::UnixListener;
 use crate::watchers::git::poll_git;
 
 pub async fn start_socket_server(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
-    let home = std::env::var("HOME")?;
+    let home = dirs::home_dir()
+        .expect("cannot find home dir")
+        .to_string_lossy()
+        .to_string();
 
     let socket_dir = PathBuf::from(home).join(".devlog");
 
