@@ -1,14 +1,14 @@
+use crate::cmd::api::load_api_key;
 use serde_json::json;
 
 const OPENROUTER_CHAT_COMPLETIONS_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL: &str = "nvidia/nemotron-3-super-120b-a12b:free";
 
 pub async fn call_claude(context: &str) -> String {
-    let api_key =
-        match std::env::var("OPENROUTER_API_KEY").or_else(|_| std::env::var("OPENROUTER_API")) {
-            Ok(api_key) => api_key,
-            Err(_) => return "OPENROUTER_API_KEY or OPENROUTER_API not set".to_string(),
-        };
+    let api_key = match load_api_key() {
+        Some(k) => k,
+        None => return "API key not set. Run `devlog api` to configure it.".to_string(),
+    };
 
     match call_llm(context.to_string(), &api_key).await {
         Ok(response) => response,

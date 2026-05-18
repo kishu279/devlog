@@ -11,6 +11,10 @@ mod watchers;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = connect_db().await?;
 
+    if let Err(e) = sd_notify::notify(&[sd_notify::NotifyState::Ready]) {
+        eprintln!("Failed to signal systemd: {}", e);
+    }
+
     // Spawn socket server
     let pool_clone = pool.clone();
     tokio::spawn(async move {

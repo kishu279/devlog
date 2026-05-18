@@ -4,7 +4,7 @@ mod llm;
 
 use clap::{Parser, Subcommand};
 
-use crate::cmd::{setup::handle_setup, standup::run_standup};
+use crate::cmd::{api::handle_api, setup::handle_setup, standup::run_standup};
 
 #[derive(Parser)]
 #[command(name = "devlog")]
@@ -23,6 +23,17 @@ enum Commands {
         project: Option<String>,
     },
     Standup,
+    Api {
+        /// Set the API key directly without interactive prompt
+        #[arg(short, long)]
+        key: Option<String>,
+        /// Show the currently saved API key
+        #[arg(short, long)]
+        show: bool,
+        /// Clear the saved API key
+        #[arg(short, long)]
+        clear: bool,
+    },
 }
 
 #[tokio::main]
@@ -37,6 +48,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Commands::Standup => {
             run_standup().await?;
+        }
+        Commands::Api { key, show, clear } => {
+            handle_api(key.clone(), *show, *clear).await?;
         }
     }
 
