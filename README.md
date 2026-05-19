@@ -38,7 +38,11 @@ sudo cp target/release/devlogd /usr/local/bin/devlogd
 
 ### 4. Set up the systemd service
 
-Create `/etc/systemd/system/devlog.service`:
+Create `~/.config/systemd/user/devlog.service`:
+
+```bash
+mkdir -p ~/.config/systemd/user
+```
 
 ```ini
 [Unit]
@@ -53,21 +57,20 @@ RestartSec=5
 NotifyAccess=all
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 
 Then enable and start it:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable devlog.service
-sudo systemctl start devlog.service
+systemctl --user daemon-reload
+systemctl --user enable --now devlog.service
 ```
 
 Verify it's running:
 
 ```bash
-systemctl status devlog.service
+systemctl --user status devlog.service
 ```
 
 ### 5. Install the CLI
