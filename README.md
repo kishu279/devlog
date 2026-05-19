@@ -14,6 +14,12 @@ Devlog is meant to run quietly in the background and build a timeline of enginee
 
 ---
 
+## Demo
+
+[![Devlog Demo](https://img.shields.io/badge/▶%20Watch%20Demo-Google%20Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/1BYwaUnQgBFQ6IrJEHyV0k_AihAnewKXY/view?usp=sharing)
+
+---
+
 ## Installation
 
 ### 1. Clone the repo
